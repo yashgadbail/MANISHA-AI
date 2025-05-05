@@ -35,7 +35,7 @@ def generate(input_text: str) -> str:
     generate_content_config = types.GenerateContentConfig(
         response_mime_type="text/plain",
         system_instruction=[
-            types.Part.from_text(text="""Answer the following user query in short without much punctuation in less than 30 words"""),
+            types.Part.from_text(text="""Answer the following user query in short with minimal punctuation and no ** or brackets, can add fulstop at end and complete sentence in less than 30 words compulsory."""),
         ],
     )
 

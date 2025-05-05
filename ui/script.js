@@ -397,9 +397,24 @@ document.addEventListener('DOMContentLoaded', function () {
                         <h2 class="card-header">Generated Audio</h2>
                         <div class="mb-5"><div id="waveform" class="waveform-container"></div></div>
                         <div class="audio-player-controls">
-                            <div class="audio-player-buttons">
-                                <button id="play-btn" class="btn-primary" disabled>...</button>
-                                <a id="download-link" href="#" download="" class="btn-secondary">...</a>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="audio-player-buttons">
+                                    <button id="play-btn" class="btn-primary" disabled>...</button>
+                                    <a id="download-link" href="#" download="" class="btn-secondary">...</a>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label for="speed-control" class="text-sm font-medium">Speed:</label>
+                                    <select id="speed-control" class="form-select text-sm py-1 pl-2 pr-8 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                        <option value="0.5">0.5x</option>
+                                        <option value="0.75">0.75x</option>
+                                        <option value="0.85" selected>0.85x</option>
+                                        <option value="1">1x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                        <option value="1.75">1.75x</option>
+                                        <option value="2">2x</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="audio-player-info text-xs sm:text-sm">
                                 Mode: <span id="player-voice-mode" class="font-medium text-indigo-600 dark:text-indigo-400">--</span>
@@ -480,6 +495,10 @@ document.addEventListener('DOMContentLoaded', function () {
             currentDurationSpan.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
             currentPlayBtn.disabled = false;
             currentPlayBtn.innerHTML = playIconSVG;
+            // Set default playback speed to 0.85x
+            wavesurfer.setPlaybackRate(0.85);
+            // Auto-play the audio when it's ready
+            wavesurfer.play();
         });
         wavesurfer.on('play', () => { currentPlayBtn.innerHTML = pauseIconSVG; });
         wavesurfer.on('pause', () => { currentPlayBtn.innerHTML = playIconSVG; });
@@ -1057,4 +1076,4 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Initial Load ---
     loadInitialState(); // Load state from config after setting up listeners
 
-}); // End DOMContentLoaded
+}); // End DOMContent
