@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
             success: { base: 'notification-success', icon: '<svg class="notification-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>' },
             error: { base: 'notification-error', icon: '<svg class="notification-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>' },
             warning: { base: 'notification-warning', icon: '<svg class="notification-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>' },
-            info: { base: 'notification-info', icon: '<svg class="notification-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" /></svg>' }
+            info: { base: 'notification-info', icon: '<svg class="notification-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" /></svg>' }
         };
         const notificationDiv = document.createElement('div');
         const styleInfo = styles[type] || styles['info'];
@@ -515,6 +515,72 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Form Submission & Loading State ---
+    if (ttsForm) {
+        ttsForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Disable the generate button immediately
+            if (generateBtn) {
+                generateBtn.disabled = true;
+            }
+
+            // Basic client-side validation
+            const text = textArea.value.trim();
+            const mode = document.querySelector('input[name="voice_mode"]:checked')?.value;
+            const predefinedFile = predefinedVoiceSelect?.value;
+            const cloneFile = cloneReferenceSelect?.value;
+
+            if (!text) {
+                showNotification("Please enter some text to generate speech.", 'error');
+                generateBtn.disabled = false;
+                return;
+            }
+            if (mode === 'predefined' && (!predefinedFile || predefinedFile === 'none')) {
+                showNotification("Please select a predefined voice.", 'error');
+                generateBtn.disabled = false;
+                return;
+            }
+            if (mode === 'clone' && (!cloneFile || cloneFile === 'none')) {
+                showNotification("Please select a reference audio file for Voice Clone mode.", 'error');
+                generateBtn.disabled = false;
+                return;
+            }
+
+            // Check Generation Warning
+            if (!hideGenerationWarning) {
+                showGenerationWarningModal();
+                generateBtn.disabled = false;
+                return;
+            }
+
+            proceedWithSubmissionChecks();
+        });
+    }
+
+    // Helper functions for submission flow
+    function proceedWithSubmissionChecks() {
+        // Re-disable the button since we're proceeding
+        if (generateBtn) {
+            generateBtn.disabled = true;
+        }
+
+        const text = textArea.value.trim();
+        const mode = document.querySelector('input[name="voice_mode"]:checked')?.value;
+        const isSplitting = splitTextToggle && splitTextToggle.checked;
+        const currentChunkSize = chunkSizeSlider ? parseInt(chunkSizeSlider.value) : 120;
+        const needsChunkWarning = isSplitting &&
+            text.length >= currentChunkSize * 2 &&
+            mode === 'dialogue' &&
+            !hideChunkWarning;
+
+        if (needsChunkWarning) {
+            showChunkWarningModal();
+            generateBtn.disabled = false;
+            return;
+        }
+
+        showLoadingOverlayAndSubmit();
+    }
 
     // --- Helper functions for submission flow (MOVED OUTSIDE LISTENER) ---
     function proceedWithSubmissionChecks() {
@@ -543,45 +609,6 @@ document.addEventListener('DOMContentLoaded', function () {
         ttsForm.submit(); // Explicitly submit the form now
     }
     // --- End Helper functions ---
-
-    if (ttsForm) {
-        ttsForm.addEventListener('submit', function (event) {
-            event.preventDefault(); // Prevent default submission initially
-
-            // --- Start of actual checks ---
-
-            // Basic client-side validation (reuse existing logic)
-            const text = textArea.value.trim();
-            const mode = document.querySelector('input[name="voice_mode"]:checked')?.value;
-            const predefinedFile = predefinedVoiceSelect?.value;
-            const cloneFile = cloneReferenceSelect?.value;
-
-            if (!text) {
-                showNotification("Please enter some text to generate speech.", 'error');
-                return; // Stop processing
-            }
-            if (mode === 'predefined' && (!predefinedFile || predefinedFile === 'none')) {
-                showNotification("Please select a predefined voice.", 'error');
-                return; // Stop processing
-            }
-            if (mode === 'clone' && (!cloneFile || cloneFile === 'none')) {
-                showNotification("Please select a reference audio file for Voice Clone mode.", 'error');
-                return; // Stop processing
-            }
-
-            // --- Check *General* Generation Warning ---
-            if (!hideGenerationWarning) {
-                showGenerationWarningModal();
-                // Wait for generation warning modal interaction (Acknowledge button calls proceedWithSubmissionChecks)
-                return;
-            }
-
-            // If general warning is already dismissed, proceed to next checks
-            proceedWithSubmissionChecks();
-
-        }); // --- End of ttsForm submit listener ---
-    }
-
 
     function showLoadingOverlay() {
         if (isGenerating) {
@@ -616,6 +643,35 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => loadingOverlay.classList.add('hidden'), 300);
             generateBtn.disabled = false;
         }
+    }
+
+    // Loading state management
+    function showLoading() {
+        const generateBtn = document.getElementById('generate-btn');
+        const generateIcon = generateBtn.querySelector('.generate-icon');
+        const loadingSpinner = generateBtn.querySelector('.loading-spinner');
+        const generateText = generateBtn.querySelector('.generate-text');
+        const loadingText = generateBtn.querySelector('.loading-text');
+        
+        generateBtn.disabled = true;
+        generateIcon.classList.add('hidden');
+        loadingSpinner.classList.remove('hidden');
+        generateText.classList.add('hidden');
+        loadingText.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+        const generateBtn = document.getElementById('generate-btn');
+        const generateIcon = generateBtn.querySelector('.generate-icon');
+        const loadingSpinner = generateBtn.querySelector('.loading-spinner');
+        const generateText = generateBtn.querySelector('.generate-text');
+        const loadingText = generateBtn.querySelector('.loading-text');
+        
+        generateBtn.disabled = false;
+        generateIcon.classList.remove('hidden');
+        loadingSpinner.classList.add('hidden');
+        generateText.classList.remove('hidden');
+        loadingText.classList.add('hidden');
     }
 
     // Handle Cancel button click

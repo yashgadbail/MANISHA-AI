@@ -34,6 +34,9 @@ def generate(input_text: str) -> str:
     ]
     generate_content_config = types.GenerateContentConfig(
         response_mime_type="text/plain",
+        system_instruction=[
+            types.Part.from_text(text="""Answer the following user query in short without much punctuation in less than 30 words"""),
+        ],
     )
 
     for chunk in client.models.generate_content_stream(
