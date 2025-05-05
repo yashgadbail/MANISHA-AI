@@ -10,7 +10,41 @@ import numpy as np
 from typing import Optional, Tuple, List, Dict, Any  # Added Dict, Any
 from huggingface_hub import hf_hub_download
 from tqdm import tqdm  # Import tqdm for progress bars
+import base64
+import os
+from google import genai
+from google.genai import types
+from dotenv import load_dotenv
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+def generate(input_text: str) -> str:
+    response = ""
+    client = genai.Client(
+        api_key=GEMINI_API_KEY,
+    )
 
+    model = "gemini-1.5-flash"
+    contents = [
+        types.Content(
+            role="user",
+            parts=[
+                types.Part.from_text(text=f"""{input_text}"""),
+            ],
+        ),
+    ]
+    generate_content_config = types.GenerateContentConfig(
+        response_mime_type="text/plain",
+    )
+
+    for chunk in client.models.generate_content_stream(
+        model=model,
+        contents=contents,
+        config=generate_content_config,
+    ):
+        response += chunk.text
+    print(response)
+    return response
+    
 # Import Dia model class and config from the NEW dia library structure
 try:
     from dia.model import (
@@ -685,7 +719,7 @@ def generate_speech(
 
     monitor = PerformanceMonitor()
     monitor.record("Request received in engine (simple generate)")
-
+    text_to_process = generate(text_to_process)
     # Basic split_text logic (same as original)
     if split_text:
         if len(text_to_process) < chunk_size * 2:
