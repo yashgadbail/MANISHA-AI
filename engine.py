@@ -16,6 +16,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 load_dotenv()
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 def generate(input_text: str) -> str:
     response = ""
@@ -35,7 +36,7 @@ def generate(input_text: str) -> str:
     generate_content_config = types.GenerateContentConfig(
         response_mime_type="text/plain",
         system_instruction=[
-            types.Part.from_text(text="""Answer the following user query in short with minimal punctuation and no ** or brackets, can add fulstop at end and complete sentence in less than 30 words compulsory."""),
+            types.Part.from_text(text="""Answer the following user query in short and no ** or brackets, can add fulstop at end and complete sentence in less than 30 words compulsory."""),
         ],
     )
 
@@ -46,7 +47,7 @@ def generate(input_text: str) -> str:
     ):
         response += chunk.text
     print(response)
-    return response
+    return response + "."
     
 # Import Dia model class and config from the NEW dia library structure
 try:
@@ -692,7 +693,7 @@ def generate_speech(
     split_text: bool = False,
     chunk_size: int = 120,
     # Post-processing parameters (applied after generation)
-    enable_silence_trimming: bool = True,
+    enable_silence_trimming: bool = False,
     enable_internal_silence_fix: bool = True,
     enable_unvoiced_removal: bool = True,
 ) -> Optional[Tuple[np.ndarray, int]]:

@@ -495,8 +495,6 @@ document.addEventListener('DOMContentLoaded', function () {
             currentDurationSpan.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
             currentPlayBtn.disabled = false;
             currentPlayBtn.innerHTML = playIconSVG;
-            // Set default playback speed to 0.85x
-            wavesurfer.setPlaybackRate(0.85);
             // Auto-play the audio when it's ready
             wavesurfer.play();
         });
