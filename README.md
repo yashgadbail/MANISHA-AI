@@ -1,4 +1,4 @@
-# Dia TTS Server: OpenAI-Compatible API with Web UI, Large Text Handling & Built-in Voices
+# Dia TTS Server x Gemini: OpenAI-Compatible API with Web UI, Large Text Handling & Built-in Voices
 
 **Self-host the powerful [Nari Labs Dia TTS model](https://github.com/nari-labs/dia) with this enhanced FastAPI server! Features an intuitive Web UI, flexible API endpoints (including OpenAI-compatible `/v1/audio/speech`), support for realistic dialogue (`[S1]`/`[S2]`), improved voice cloning, large text processing via intelligent chunking, and consistent, reproducible voices using 43 built-in ready-to-use voices and generation seeds feature.**
 
